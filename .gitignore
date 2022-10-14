@@ -1,2 +1,8 @@
+/prop_tune/target
+/prop_tune_core/target
+/prop_tune_macro/target
+/prop_tune/Cargo.lock
+/prop_tune_core/Cargo.lock
+/prop_tune_macro/Cargo.lock
 /target
 /Cargo.lock
