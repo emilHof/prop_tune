@@ -8,6 +8,7 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
+prop_tune_core = {path = "../prop_tune_core"}
 syn = { version = "*", features = ["extra-traits"] }
 quote = "*"
 proc-macro2 = "*"

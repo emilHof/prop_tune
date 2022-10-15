@@ -49,7 +49,10 @@ impl Proposition {
                                 Proposition::Condition(cond) => Proposition::new_and(a, Proposition::Condition(cond)),
                                 Proposition::Composition(comp) => match *comp {
                                     Operator::And(b, c) => Proposition::new_and(a, Proposition::new_and(b, c).normal()),
-                                    Operator::Or(b, c) => Proposition::new_or(Proposition::new_and(a.clone(), b).normal(), Proposition::new_and(a, c).normal()),
+                                    Operator::Or(b, c) => Proposition::new_or(
+                                        Proposition::new_and(a.clone(), b).normal(), 
+                                        Proposition::new_and(a, c).normal()
+                                    ),
                                     Operator::Not(b) => Proposition::new_and(a, Proposition::new_not(b)),
                                     Operator::Implies(_, _) => unreachable!(),
                                 }
@@ -58,11 +61,20 @@ impl Proposition {
                         Proposition::Condition(a) => {
                             let a = Proposition::Condition(a);
                             match b.normal() {
-                                Proposition::Predicate(b) => Proposition::new_and(a, Proposition::Predicate(b)),
-                                Proposition::Condition(cond) => Proposition::new_and(a, Proposition::Condition(cond)),
+                                Proposition::Predicate(b) => Proposition::new_and(
+                                    a, 
+                                    Proposition::Predicate(b)
+                                ),
+                                Proposition::Condition(cond) => Proposition::new_and(
+                                    a, 
+                                    Proposition::Condition(cond)
+                                ),
                                 Proposition::Composition(comp) => match *comp {
                                         Operator::And(b, c) => Proposition::new_and(a, Proposition::new_and(b, c)),
-                                    Operator::Or(b, c) => Proposition::new_or(Proposition::new_and(a.clone(), b), Proposition::new_and(a, c)),
+                                    Operator::Or(b, c) => Proposition::new_or(
+                                        Proposition::new_and(a.clone(), b), 
+                                        Proposition::new_and(a, c)
+                                    ),
                                     Operator::Not(b) => Proposition::new_and(a, Proposition::new_not(b)),
                                     Operator::Implies(_, _) => unreachable!(),
                                 },
@@ -158,32 +170,66 @@ impl Proposition {
                     match a.account_predicates(&mut preds, &mut nots) && b.account_predicates(&mut preds, &mut nots) {
                         true => {
                             match preds.len().cmp(&1) {
-                                Ordering::Less => Self::construct_ands(nots.into_iter().collect()),
+                                Ordering::Less => Self::chain_props(nots.into_iter().collect(), Proposition::new_and),
                                 _ => match nots.len().cmp(&1) {
-                                    Ordering::Less => Self::construct_ands(preds.into_iter().collect()),
-                                    _ => Proposition::new_and(Self::construct_ands(preds.into_iter().collect()), Self::construct_ands(nots.into_iter().collect()))
+                                    Ordering::Less => Self::chain_props(preds.into_iter().collect(), Proposition::new_and),
+                                    _ => Proposition::new_and(
+                                        Self::chain_props(preds.into_iter().collect(), Proposition::new_and), 
+                                        Self::chain_props(nots.into_iter().collect(), Proposition::new_and)
+                                    )
                                 }
                             }
                         },
                         false => Proposition::Condition(Condition::False),
                     }
                 },
-                Operator::Or(a, b) => Proposition::new_or(a.simplify(), b.simplify()),
+                Operator::Or(a, b) => {
+                    let mut props = a.gather_propositions(vec![]);
+                    props = b.gather_propositions(props);
+
+                    props = props.into_iter().filter(|prop| prop.ne(&Proposition::Condition(Condition::False))).collect();
+
+                    match props.len().cmp(&1) {
+                        Ordering::Less => Proposition::new_false(),
+                        _ => Self::chain_props(props, Proposition::new_or)
+                    }
+                },
                 Operator::Implies(_, _) => unreachable!(),
             }
         }
     }
 
-    fn construct_ands(predicates: Vec<String>) -> Proposition {
-        let n = predicates.len() - 1;
+    fn gather_propositions(self, mut props: Vec<Proposition>) -> Vec<Proposition> {
+        match self {
+            Proposition::Condition(Condition::True) => props.push(Proposition::new_true()),
+            Proposition::Predicate(pred) => props.push(Proposition::new_pred(pred)),
+            Proposition::Composition(cond) => match *cond {
+                Operator::And(a, b) => {
+                    props.push(Proposition::new_and(a, b).simplify())
+                },
+                Operator::Or(a, b) => {
+                    props = a.gather_propositions(props);
+                    props = b.gather_propositions(props);
+                },
+                _ => (),
+            },
+            _ => (),
+        }
+        props
+    }
+
+    fn chain_props<P>(props: Vec<P>, comp: impl Fn(Proposition, Proposition) -> Proposition) -> Proposition
+        where P: Into<Proposition> + Clone
+    {
+        let n = props.len() - 1;
         match n.cmp(&1) {
-            Ordering::Less => Proposition::Predicate(predicates.get(0).expect("there to be more predicates").clone()),
+            Ordering::Less => props.get(0).expect("there to be a proposition").clone().into(),
             _ => {
-                predicates.iter()
-                    .take(n).
-                    fold(
-                        Proposition::new_pred(predicates.index(n)), 
-                        |prop, pred| Proposition::new_and(pred.clone(), prop)
+                props.iter()
+                    .take(n)
+                    .fold(
+                        props.index(n).clone().into(), 
+                        |prev, prop| comp(prev, prop.clone().into())
                     )
             }
         }
@@ -302,10 +348,22 @@ mod test_procs {
                 Proposition::new_and("A", "C"),
             ),
             (
-                
                 Proposition::new_and("A", Proposition::new_not("A")),
                 Proposition::Condition(Condition::False)
-            )
+            ),
+            (
+                Proposition::new_or(
+                    Proposition::new_or(
+                        Proposition::new_and(
+                            "A", 
+                            Proposition::new_not("A")
+                        ), Proposition::new_and(
+                        "A", 
+                        Proposition::new_not("A"))
+                    ), 
+                    Proposition::new_and("A", "D")) ,
+                Proposition::new_and("A", "D")
+            ),
         ];
 
         cases.into_iter().for_each(|(input, expected)| assert_eq!(expected, input.simplify()));

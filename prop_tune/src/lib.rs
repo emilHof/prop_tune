@@ -1,11 +1,11 @@
 pub use prop_tune_core::{operators, stream};
 
 #[cfg(test)]
-mod tests {
+mod test_lib {
     #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
+    fn test_macro() {
+        prop_tune_macro::make_answer!{(a && b)};
+
+        println!("{}", answer())
     }
 }
-
