@@ -1,3 +1,7 @@
+mod normal;
+mod demorg;
+mod simplify;
+
 use std::ops::Index;
 use std::cmp::Ordering;
 
@@ -184,10 +188,11 @@ impl Proposition {
                     }
                 },
                 Operator::Or(a, b) => {
-                    let mut props = a.gather_propositions(vec![]);
-                    props = b.gather_propositions(props);
+                    let mut props = std::collections::HashSet::new();
+                    a.gather_propositions(&mut props);
+                    b.gather_propositions(&mut props);
 
-                    props = props.into_iter().filter(|prop| prop.ne(&Proposition::Condition(Condition::False))).collect();
+                    let props: Vec<Proposition> = props.into_iter().filter(|prop| prop.ne(&Proposition::Condition(Condition::False))).collect();
 
                     match props.len().cmp(&1) {
                         Ordering::Less => Proposition::new_false(),
@@ -199,23 +204,17 @@ impl Proposition {
         }
     }
 
-    fn gather_propositions(self, mut props: Vec<Proposition>) -> Vec<Proposition> {
+    fn gather_propositions(self, props: &mut std::collections::HashSet<Proposition>) -> bool {
         match self {
-            Proposition::Condition(Condition::True) => props.push(Proposition::new_true()),
-            Proposition::Predicate(pred) => props.push(Proposition::new_pred(pred)),
+            Proposition::Condition(Condition::True) => props.insert(Proposition::new_true()),
+            Proposition::Predicate(pred) => props.insert(Proposition::new_pred(pred)),
             Proposition::Composition(cond) => match *cond {
-                Operator::And(a, b) => {
-                    props.push(Proposition::new_and(a, b).simplify())
-                },
-                Operator::Or(a, b) => {
-                    props = a.gather_propositions(props);
-                    props = b.gather_propositions(props);
-                },
-                _ => (),
+                Operator::And(a, b) => props.insert(Proposition::new_and(a, b).simplify()),
+                Operator::Or(a, b) => a.gather_propositions(props) && b.gather_propositions(props),
+                _ => false,
             },
-            _ => (),
+            _ => false,
         }
-        props
     }
 
     fn chain_props<P>(props: Vec<P>, comp: impl Fn(Proposition, Proposition) -> Proposition) -> Proposition

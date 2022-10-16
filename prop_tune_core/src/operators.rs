@@ -1,7 +1,7 @@
 mod methods;
 use crate::stream;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub enum Operator {
     And(Proposition, Proposition),
     Or(Proposition, Proposition),
@@ -30,6 +30,18 @@ impl PartialEq for Operator {
             }
         }
     }
+}
+
+impl Eq for Operator {}
+
+#[derive(Debug)]
+pub struct ParseError;
+
+#[derive(Debug, PartialEq, Clone, Hash)]
+pub enum Proposition {
+    Condition(Condition),
+    Predicate(String),
+    Composition(Box<Operator>),
 }
 
 impl Proposition {
@@ -62,6 +74,7 @@ impl Proposition {
     }
 }
 
+impl Eq for Proposition {}
 
 impl Into<Proposition> for &str {
     fn into(self) -> Proposition {
@@ -75,21 +88,13 @@ impl Into<Proposition> for String {
     }
 } 
 
-#[derive(Debug)]
-pub struct ParseError;
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum Proposition {
-    Condition(Condition),
-    Predicate(String),
-    Composition(Box<Operator>),
-}
-
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Hash)]
 pub enum Condition {
     True,
     False,
 }
+
+impl Eq for Condition {}
 
 impl TryInto<Proposition> for crate::stream::TokenStream {
     type Error = ParseError;
