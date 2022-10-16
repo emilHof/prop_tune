@@ -4,7 +4,7 @@ pub use prop_tune_core::{operators, stream};
 mod test_lib {
     #[test]
     fn test_macro() {
-        prop_tune_macro::make_answer!{(a && b)};
+        prop_tune_macro::make_answer!{c && (a && b)};
 
         println!("{}", answer())
     }
