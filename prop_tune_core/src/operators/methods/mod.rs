@@ -110,6 +110,13 @@ mod test_procs {
                     Proposition::new_and("A", "D")) ,
                 Proposition::new_and("A", "D")
             ),
+            (
+                Proposition::new_and("c", Proposition::new_not(Proposition::new_and("a", "b"))),
+                Proposition::new_or(
+                    Proposition::new_and("c", Proposition::new_not("a")), 
+                    Proposition::new_and("c", Proposition::new_not("b"))
+                ),
+            )
         ];
 
         cases.into_iter().for_each(|(input, expected)| assert_eq!(expected, input.simplify()));

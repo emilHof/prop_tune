@@ -8,16 +8,34 @@ impl Proposition {
             Proposition::Composition(comp) => match *comp {
                 Operator::Not(a) => Proposition::new_not(a),
                 Operator::And(a, b) => {
-                    let (mut preds, mut nots) = (std::collections::HashSet::new(), std::collections::HashSet::new());
-                    match a.account_predicates(&mut preds, &mut nots) && b.account_predicates(&mut preds, &mut nots) {
+                    let (mut preds, mut nots) = 
+                        (std::collections::HashSet::new(), std::collections::HashSet::new());
+                    match a.account_predicates(&mut preds, &mut nots) 
+                        && b.account_predicates(&mut preds, &mut nots) {
                         true => {
                             match preds.len().cmp(&1) {
-                                Ordering::Less => Self::chain_props(nots.into_iter().collect(), Proposition::new_and),
+                                Ordering::Less => Self::chain_props(
+                                    nots.into_iter().collect(), 
+                                    |a| Proposition::new_not(a), 
+                                    Proposition::new_and
+                                ),
                                 _ => match nots.len().cmp(&1) {
-                                    Ordering::Less => Self::chain_props(preds.into_iter().collect(), Proposition::new_and),
+                                    Ordering::Less => Self::chain_props(
+                                        preds.into_iter().collect(), 
+                                        |a| a,
+                                        Proposition::new_and
+                                    ),
                                     _ => Proposition::new_and(
-                                        Self::chain_props(preds.into_iter().collect(), Proposition::new_and), 
-                                        Self::chain_props(nots.into_iter().collect(), Proposition::new_and)
+                                        Self::chain_props(
+                                            preds.into_iter().collect(), 
+                                            |a| a,
+                                            Proposition::new_and
+                                        ), 
+                                        Self::chain_props(
+                                            nots.into_iter().collect(), 
+                                            |a| Proposition::new_not(a),
+                                            |a, b| Proposition::new_and(a, b)
+                                        )
                                     )
                                 }
                             }
@@ -30,11 +48,13 @@ impl Proposition {
                     a.gather_propositions(&mut props);
                     b.gather_propositions(&mut props);
 
-                    let props: Vec<Proposition> = props.into_iter().filter(|prop| prop.ne(&Proposition::Condition(Condition::False))).collect();
+                    let props: Vec<Proposition> = props.into_iter()
+                        .filter(|prop| prop.ne(&Proposition::Condition(Condition::False)))
+                        .collect();
 
                     match props.len().cmp(&1) {
                         Ordering::Less => Proposition::new_false(),
-                        _ => Self::chain_props(props, Proposition::new_or)
+                        _ => Self::chain_props(props, |a| a, Proposition::new_or)
                     }
                 },
                 Operator::Implies(_, _) => unreachable!(),
@@ -55,24 +75,33 @@ impl Proposition {
         }
     }
 
-    fn chain_props<P>(props: Vec<P>, comp: impl Fn(Proposition, Proposition) -> Proposition) -> Proposition
+    fn chain_props<P>(
+        props: Vec<P>, 
+        wrap: impl Fn(Proposition) -> Proposition, 
+        comp: impl Fn(Proposition, Proposition) -> Proposition
+    ) -> Proposition
         where P: Into<Proposition> + Clone
     {
         let n = props.len() - 1;
         match n.cmp(&1) {
-            Ordering::Less => props.get(0).expect("there to be a proposition").clone().into(),
+            Ordering::Less => wrap(props.get(0).expect("there to be a proposition").clone().into()),
             _ => {
                 props.iter()
                     .take(n)
                     .fold(
-                        props.index(n).clone().into(), 
-                        |prev, prop| comp(prev, prop.clone().into())
+                        wrap(props.index(n).clone().into()),
+                        |prev, prop| comp(prev, wrap(prop.clone().into()))
                     )
             }
         }
     }
 
-    fn account_predicates(&self, preds: &mut std::collections::HashSet<String>, nots: &mut std::collections::HashSet<String>) -> bool {
+    fn account_predicates(
+        &self, 
+        preds: &mut std::collections::HashSet<String>, 
+        nots: &mut std::collections::HashSet<String>
+    ) -> bool 
+    {
         match self {
             Proposition::Condition(cond) => match cond {
                 Condition::True => true,
