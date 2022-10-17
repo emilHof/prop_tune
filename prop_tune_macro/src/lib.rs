@@ -1,7 +1,15 @@
 extern crate proc_macro;
-use proc_macro::{TokenStream, TokenTree, Ident, Group, Punct, Span};
-use prop_tune_core::{stream::{self, Bracket, Operator, Token}, operators::{self, Proposition, Condition}};
-use quote::quote;
+use proc_macro::{
+    TokenStream, TokenTree, Ident, Group, Punct, Span
+};
+use prop_tune_core::{
+    stream::{
+        self, Bracket, Operator, Token
+    }, 
+    operators::{
+        self, Proposition, Condition
+    }
+};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -118,32 +126,12 @@ impl Into<TokenTree> for MacroProp {
 }
 
 #[proc_macro]
-pub fn make_answer(_item: TokenStream) -> TokenStream {
-    let mut tok = _item.into_iter().collect::<Vec<TokenTree>>();
-    let params = TokenStream::from_iter(match &tok[0] {
-        TokenTree::Group(group) => group.stream().into_iter().fold(vec![], |mut acc, ident| { 
-            acc.append(&mut vec![
-                    ident, 
-                    TokenTree::Punct(Punct::new(':', proc_macro::Spacing::Alone)),
-                    TokenTree::Ident(Ident::new("bool", proc_macro::Span::call_site())), 
-                    TokenTree::Punct(Punct::new(',', proc_macro::Spacing::Alone))
-            ]);
-            acc
-        }),
-        _ => panic!("expected parameters to be declared"),
+pub fn simplify(tok: TokenStream) -> TokenStream {
 
-    });
-
-    tok.remove(0);
-
-    eprintln!("params: {:?}", params);
-
-    let out: PropStream = match TokenStream::from_iter(tok).try_into() {
+    let out: PropStream = match tok.try_into() {
         Ok(out) => out,
         Err(err) => {panic!("{}", err)},
     };
-
-    eprintln!("PropStream: {:?}", out);
 
     let out: Proposition = match out.0.try_into() {
         Ok(out) => out,
@@ -151,36 +139,8 @@ pub fn make_answer(_item: TokenStream) -> TokenStream {
     };
 
     let out = out.simplify();
-
-    let stream = TokenStream::from_iter(
-        vec![
-            TokenTree::Ident(Ident::new("fn", Span::call_site())),
-            TokenTree::Ident(Ident::new("answer", Span::call_site())),
-            TokenTree::Group(Group::new(proc_macro::Delimiter::Parenthesis, params)),
-            TokenTree::Punct(Punct::new('-', proc_macro::Spacing::Joint)),
-            TokenTree::Punct(Punct::new('>', proc_macro::Spacing::Alone)),
-            TokenTree::Ident(Ident::new("bool", Span::call_site())),
-            TokenTree::Group(Group::new(proc_macro::Delimiter::Brace, TokenStream::from_iter(
-                vec![
-                    TokenTree::Ident(Ident::new("if", Span::call_site())),
-                    MacroProp(out).into(),
-                    TokenTree::Group(
-                        Group::new(
-                            proc_macro::Delimiter::Brace, 
-                            TokenStream::from(TokenTree::Ident(Ident::new("true", Span::call_site())))
-                        )
-                    ),
-                    TokenTree::Ident(Ident::new("else", Span::call_site())),
-                    TokenTree::Group(
-                        Group::new(
-                            proc_macro::Delimiter::Brace, 
-                            TokenStream::from(TokenTree::Ident(Ident::new("false", Span::call_site())))
-                        )
-                    ),
-                ]
-            )))
-        ], 
-    );
+    
+    let stream = TokenStream::from(Into::<TokenTree>::into(MacroProp(out)));
     stream
 }
 

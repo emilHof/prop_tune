@@ -1,5 +1,12 @@
 pub use prop_tune_core::{operators, stream};
-prop_tune_macro::make_answer!{(a b c) c && !(a && b)}
+
+fn eval(a: bool, b: bool, c: bool, d: bool) -> bool {
+    if prop_tune_macro::simplify!{c && !(a && (!c && d)) && b} {
+        true
+    } else {
+        false
+    }
+}
 
 #[cfg(test)]
 mod test_lib {
@@ -7,6 +14,6 @@ mod test_lib {
 
     #[test]
     fn test_macro() {
-        println!("{}", answer(true, false, false))
+        println!("{}", eval(true, true, false, false))
     }
 }
