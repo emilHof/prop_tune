@@ -38,7 +38,7 @@ impl TryInto<PropStream> for TokenStream {
                     "|" => match &tok[i+1] {
                         TokenTree::Punct(ident2) => match ident2.to_string().as_str() {
                             "|" => {
-                                out.0.0.push(Token::Operator(Operator::And));
+                                out.0.0.push(Token::Operator(Operator::Or));
                                 i += 2
                             },
                             _ => return Err("|* is not a valid operator".to_string())
