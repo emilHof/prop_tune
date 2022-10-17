@@ -82,8 +82,8 @@ impl Into<TokenTree> for MacroProp {
     fn into(self) -> TokenTree {
         match self.0 {
             Proposition::Condition(cond) => TokenTree::Ident(match cond {
-                Condition::True => Ident::new("True", Span::call_site()),
-                Condition::False => Ident::new("False", Span::call_site()),
+                Condition::True => Ident::new("true", Span::call_site()),
+                Condition::False => Ident::new("false", Span::call_site()),
             }),
             Proposition::Predicate(pred) => TokenTree::Ident(Ident::new(pred.as_str(), Span::call_site())),
             Proposition::Composition(comp) => TokenTree::Group(match *comp {
