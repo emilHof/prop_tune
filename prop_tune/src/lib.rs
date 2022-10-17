@@ -1,7 +1,8 @@
 pub use prop_tune_core::{operators, stream};
+pub use prop_tune_macro::simplify;
 
 fn eval(a: bool, b: bool, c: bool, d: bool) -> bool {
-    if prop_tune_macro::simplify!{c && !(a && (!c && d)) && b} {
+    if simplify!{c && !(a && (!c && d)) && b} {
         true
     } else {
         false
