@@ -13,6 +13,3 @@ proc-macro = true
 
 [dependencies]
 prop_tune_core = { version = "0.1.0", path = "../prop_tune_core" }
-syn = { version = "*", features = ["extra-traits"] }
-quote = "*"
-proc-macro2 = "*"
