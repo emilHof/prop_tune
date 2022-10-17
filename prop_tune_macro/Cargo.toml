@@ -2,7 +2,7 @@
 name = "prop_tune_macro"
 version = "0.1.0"
 edition = "2021"
-description = "A crate to simplify work with Propositional Statements."
+description = "The procedural macro crate for proc_tune"
 license = "MIT"
 repository = "https://github.com/emilHof/prop_tune"
 documentation = "https://github.com/emilHof/prop_tune"
@@ -12,7 +12,7 @@ documentation = "https://github.com/emilHof/prop_tune"
 proc-macro = true
 
 [dependencies]
-prop_tune_core = {path = "../prop_tune_core"}
+prop_tune_core = { version = "0.1.0", path = "../prop_tune_core" }
 syn = { version = "*", features = ["extra-traits"] }
 quote = "*"
 proc-macro2 = "*"
