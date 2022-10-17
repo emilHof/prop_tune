@@ -11,4 +11,4 @@ documentation = "https://github.com/emilHof/prop_tune"
 
 [dependencies]
 prop_tune_core = { version="0.1.0", path = "../prop_tune_core"}
-prop_tune_macro = {path = "../prop_tune_macro"}
+prop_tune_macro = { version="0.1.0", path = "../prop_tune_macro"}
