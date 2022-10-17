@@ -62,16 +62,16 @@ impl Proposition {
         }
     }
 
-    fn gather_propositions(self, props: &mut std::collections::HashSet<Proposition>) -> bool {
+    fn gather_propositions(self, props: &mut std::collections::HashSet<Proposition>) {
         match self {
-            Proposition::Condition(Condition::True) => {props.insert(Proposition::new_true()); true},
-            Proposition::Predicate(pred) => {props.insert(Proposition::new_pred(pred)); true},
+            Proposition::Condition(Condition::True) => {props.insert(Proposition::new_true());},
+            Proposition::Predicate(pred) => {props.insert(Proposition::new_pred(pred));},
             Proposition::Composition(cond) => match *cond {
-                Operator::And(a, b) => {props.insert(Proposition::new_and(a, b).simplify()); true},
-                Operator::Or(a, b) => a.gather_propositions(props) && b.gather_propositions(props),
-                _ => false,
+                Operator::And(a, b) => {props.insert(Proposition::new_and(a, b).simplify());},
+                Operator::Or(a, b) => {a.gather_propositions(props); b.gather_propositions(props)},
+                _ => (),
             },
-            _ => false,
+            _ => (),
         }
     }
 
