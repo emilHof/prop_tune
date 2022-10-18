@@ -41,20 +41,36 @@ let cases = vec![true, false];
 
 #[allow(dead_code)]
 fn ft1p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
-    if ((e || !(a && !(b && c))) && !(c && a)) && ((a && (b || !c)) && !((d || !b) && !(a && c))) { 
-        true 
-    } else { 
-        false 
-    }
+    ((e || !(a && !(b && c))) && !(c && a)) && ((a && (b || !c)) && !((d || !b) && !(a && c))) 
 }
 
 #[allow(dead_code)]
 fn ft1s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
-    if simplify!(((e || !(a && !(b && c))) && !(c && a)) && ((a && (b || !c)) && !((d || !b) && !(a && c)))) { 
-        true 
-    } else { 
-        false 
-    }
+    simplify!(((e || !(a && !(b && c))) && !(c && a)) && ((a && (b || !c)) && !((d || !b) && !(a && c)))) 
+}
+
+#[allow(dead_code)]
+fn ft2p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
+    ((a && !(b && !(d || !c))) && ((!a || _f) && (c && !(b || d)))) && (a || !(e && !c))
+}
+
+#[allow(dead_code)]
+fn ft2s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
+    simplify!(((a && !(b && !(d || !c))) && ((!a || _f) && (c && !(b || d)))) && (a || !(e && !c)))
+}
+
+#[allow(dead_code)]
+fn ft3p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
+    ((b || !( a || b )) && (!c || ( !(a || e) && (_f && !(e && d)))) 
+     || ((c && !(d || !a)) && !(d || !e))) && ((!e && (d || b)) && (a || !_f))
+}
+
+#[allow(dead_code)]
+fn ft3s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
+    simplify!(
+        ((b || !( a || b )) && (!c || ( !(a || e) && (_f && !(e && d)))) 
+         || ((c && !(d || !a)) && !(d || !e))) && ((!e && (d || b)) && (a || !_f))
+    )
 }
 
 #[allow(dead_code)]
@@ -79,14 +95,30 @@ mod test_lib {
 
     #[test]
     fn test_equiv() {
-        test_belt()
+        test_belt();
+        (0..100_000).for_each(|_| {
+            TF.iter().for_each(|&a| 
+                TF.iter().for_each(|&b| 
+                    TF.iter().for_each(|&c| 
+                        TF.iter().for_each(|&d| 
+                            TF.iter().for_each(|&e| 
+                                TF.iter().for_each(|&f| {
+                                        assert_eq!(
+                                            ft2s(a, b, c, d, e, f),
+                                            ft2p(a, b, c, d, e, f)
+                                        );
+                                        assert_eq!(
+                                            ft3s(a, b, c, d, e, f),
+                                            ft3p(a, b, c, d, e, f)
+                                        )
+                                    }))))))
+            
+        });
     }
 
     #[test]
     fn test_t1() {
         use std::time::Instant;
-        
-        let fns = vec![ft1s];
 
         let now = Instant::now();
 
@@ -96,9 +128,16 @@ mod test_lib {
                     TF.iter().for_each(|&c| 
                         TF.iter().for_each(|&d| 
                             TF.iter().for_each(|&e| 
-                                TF.iter().for_each(|&f| 
-                                    fns.iter().for_each(|func| { func(a, b, c, d, e, f); })))))))
-            
+                                TF.iter().for_each(|&f| {
+                                    ft1s(a, b, c, d, e, f);
+                                    ft2s(a, b, c, d, e, f);
+                                    ft3s(a, b, c, d, e, f);
+                                })
+                            )
+                        )
+                    )
+                )
+            )
         });
 
         println!("t1: {:.2?}", now.elapsed());
@@ -107,8 +146,6 @@ mod test_lib {
     #[test]
     fn test_t2() {
         use std::time::Instant;
-
-        let fns = vec![ft1p];
         
         let now = Instant::now();
 
@@ -118,9 +155,16 @@ mod test_lib {
                     TF.iter().for_each(|&c| 
                         TF.iter().for_each(|&d| 
                             TF.iter().for_each(|&e| 
-                                TF.iter().for_each(|&f| 
-                                    fns.iter().for_each(|func| { func(a, b, c, d, e, f); })))))))
-            
+                                TF.iter().for_each(|&f| {
+                                    ft1p(a, b, c, d, e, f);
+                                    ft2p(a, b, c, d, e, f);
+                                    ft3p(a, b, c, d, e, f);
+                                })
+                            )
+                        )
+                    )
+                )
+            )
         });
 
         println!("t2: {:.2?}", now.elapsed());
