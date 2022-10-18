@@ -1,46 +1,14 @@
 pub use prop_tune_core::{operators, stream};
 pub use prop_tune_macro::simplify;
 
+#[allow(dead_code)]
 fn test_belt() {
 let cases = vec![true, false];
-
     for &a in cases.iter() {
         for &b in cases.iter() {
             for &c in cases.iter() {
                 for &d in cases.iter() {
                     for &e in cases.iter() {
-                        /*
-                        assert_eq!(
-                             ((c && !(d || !e) || (a && !d))),
-                             simplify!(
-                                ((c && !(d || !e) || (a && !d)))
-                            )
-                        );
-                        assert_eq!(
-                            ((a || !(b && !a) && (c || !d)) && ((c && (a && !b) || (d && e)))),
-                             simplify!(
-                                 (a || !(b && !a) && (c || !d)) && ((c && (a && !b) || (d && e)))
-                            )
-                        );
-                        assert_eq!(
-                            ((a || !(b && !a) && (c || !d)) /*&& ((c && (a && !b) || (d && e))) */),
-                             simplify!(
-                            ((a || !(b && !a) && (c || !d)) /*&& ((c && (a && !b) || (d && e))) */)
-                            )
-                        );
-                        assert_eq!(
-                            (c && (a && !b)),
-                             simplify!(
-                            ((c && (a && !b)))
-                            )
-                        );
-                        assert_eq!(
-                            ((d && e)),
-                             simplify!(
-                            ((d && e))
-                            )
-                        );
-                        */
                         // case 1
                         assert_eq!(
                             a && (b || !c),
@@ -71,6 +39,27 @@ let cases = vec![true, false];
     }
 }
 
+#[allow(dead_code)]
+fn ft1p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
+    if ((e || !(a && !(b && c))) && !(c && a)) && ((a && (b || !c)) && !((d || !b) && !(a && c))) { 
+        true 
+    } else { 
+        false 
+    }
+}
+
+#[allow(dead_code)]
+fn ft1s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
+    if simplify!(((e || !(a && !(b && c))) && !(c && a)) && ((a && (b || !c)) && !((d || !b) && !(a && c)))) { 
+        true 
+    } else { 
+        false 
+    }
+}
+
+#[allow(dead_code)]
+const TF: [bool; 2] = [true, false];
+
 #[cfg(test)]
 mod test_lib {
     use super::*;
@@ -80,44 +69,6 @@ mod test_lib {
             true
         } else {
             false
-        }
-    }
-
-    fn t1() {
-        let cases = vec![true, false];
-
-        for &a in cases.iter() {
-            for &b in cases.iter() {
-                for &c in cases.iter() {
-                    for &d in cases.iter() {
-                        for &e in cases.iter() {
-                            if simplify!(
-                                ((e || !(a && !(b && c))) && !(c && a)) 
-                                && ((a && (b || !c)) && !((d || !b) && !(a && c)))
-                            ) { true } else { false };
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fn t2() {
-        let cases = vec![true, false];
-        
-        for &a in cases.iter() {
-            for &b in cases.iter() {
-                for &c in cases.iter() {
-                    for &d in cases.iter() {
-                        for &e in cases.iter() {
-                            if 
-                            ((e || !(a && !(b && c))) && !(c && a)) 
-                            && ((a && (b || !c)) && !((d || !b) && !(a && c)))
-                            { true } else { false };
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -135,9 +86,20 @@ mod test_lib {
     fn test_t1() {
         use std::time::Instant;
         
+        let fns = vec![ft1s];
+
         let now = Instant::now();
 
-        (0..100_000).for_each(|_| t1());
+        (0..100_000).for_each(|_| {
+            TF.iter().for_each(|&a| 
+                TF.iter().for_each(|&b| 
+                    TF.iter().for_each(|&c| 
+                        TF.iter().for_each(|&d| 
+                            TF.iter().for_each(|&e| 
+                                TF.iter().for_each(|&f| 
+                                    fns.iter().for_each(|func| { func(a, b, c, d, e, f); })))))))
+            
+        });
 
         println!("t1: {:.2?}", now.elapsed());
     }
@@ -145,10 +107,21 @@ mod test_lib {
     #[test]
     fn test_t2() {
         use std::time::Instant;
+
+        let fns = vec![ft1p];
         
         let now = Instant::now();
 
-        (0..100_000).for_each(|_| t2());
+        (0..100_000).for_each(|_| {
+            TF.iter().for_each(|&a| 
+                TF.iter().for_each(|&b| 
+                    TF.iter().for_each(|&c| 
+                        TF.iter().for_each(|&d| 
+                            TF.iter().for_each(|&e| 
+                                TF.iter().for_each(|&f| 
+                                    fns.iter().for_each(|func| { func(a, b, c, d, e, f); })))))))
+            
+        });
 
         println!("t2: {:.2?}", now.elapsed());
     }
