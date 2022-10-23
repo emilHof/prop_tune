@@ -103,16 +103,20 @@ mod test_lib {
                         TF.iter().for_each(|&d| 
                             TF.iter().for_each(|&e| 
                                 TF.iter().for_each(|&f| {
-                                        assert_eq!(
-                                            ft2s(a, b, c, d, e, f),
-                                            ft2p(a, b, c, d, e, f)
-                                        );
-                                        assert_eq!(
-                                            ft3s(a, b, c, d, e, f),
-                                            ft3p(a, b, c, d, e, f)
-                                        )
-                                    }))))))
-            
+                                assert_eq!(
+                                    ft2s(a, b, c, d, e, f),
+                                        ft2p(a, b, c, d, e, f)
+                                    );
+                                    assert_eq!(
+                                        ft3s(a, b, c, d, e, f),
+                                        ft3p(a, b, c, d, e, f)
+                                    )
+                                })
+                            )
+                        )
+                    )
+                )
+            )
         });
     }
 
