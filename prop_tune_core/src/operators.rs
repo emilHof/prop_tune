@@ -101,7 +101,7 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
     type Error = ParseError;
 
     fn try_into(self) -> Result<Proposition, Self::Error> {
-        if self.0.len() < 1 {
+        if self.len() < 1 {
             return Err(ParseError);
         }
 
@@ -113,11 +113,11 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
 
 fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
     let mut first = *i;
-    match &stream.0[first] {
+    match &stream[first] {
         stream::Token::Predicate(pred) => {
             *i += 1;
             if first + 1 < stream.0.len() {
-                match &stream.0[first + 1] {
+                match &stream[first + 1] {
                     stream::Token::Bracket(stream::Bracket::Close) => {
                         *i += 1;
                         return Ok(Proposition::Predicate(pred.clone()));
@@ -137,7 +137,7 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
             let prop = parse_prop(i, stream)?;
             first = *i;
 
-            if first + 1 < stream.0.len() {
+            if first + 1 < stream.len() {
                 match_op_prop(*i, i, stream, prop)
             } else {
                 return Ok(prop);
@@ -153,8 +153,8 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
 
 pub fn handle_not(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
     let mut first = *i;
-    if first < stream.0.len() {
-        let prop = match &stream.0[first] {
+    if first < stream.len() {
+        let prop = match &stream[first] {
             stream::Token::Predicate(pred) => {
                 *i += 1;
                 Ok(Proposition::Composition(Box::new(Operator::Not(
@@ -171,7 +171,7 @@ pub fn handle_not(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposi
         }?;
         first = *i;
 
-        if first + 1 < stream.0.len() {
+        if first + 1 < stream.len() {
             match_op_prop(*i, i, stream, prop)
         } else {
             return Ok(prop);

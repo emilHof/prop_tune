@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 use proc_macro::{TokenStream, TokenTree};
 use prop_tune_core::operators::Proposition;
 use prop_tune_core::stream::{self, Bracket, Operator, Token};
@@ -8,6 +10,26 @@ pub struct PropStream(stream::TokenStream);
 impl PropStream {
     pub fn new(stream: impl Into<stream::TokenStream>) -> Self {
         PropStream(stream.into())
+    }
+}
+
+impl AsMut<Vec<Token>> for PropStream {
+    fn as_mut(&mut self) -> &mut Vec<Token> {
+        self.0.as_mut()
+    }
+}
+
+impl Deref for PropStream {
+    type Target = stream::TokenStream;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for PropStream {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -37,7 +59,7 @@ impl TryInto<PropStream> for TokenStream {
                     "&" => match &tok[i + 1] {
                         TokenTree::Punct(ident2) => match ident2.to_string().as_str() {
                             "&" => {
-                                out.0 .0.push(Token::Operator(Operator::And));
+                                out.push(Token::Operator(Operator::And));
                                 i += 2
                             }
                             _ => return Err("&* is not a valid operator".to_string()),
@@ -47,7 +69,7 @@ impl TryInto<PropStream> for TokenStream {
                     "|" => match &tok[i + 1] {
                         TokenTree::Punct(ident2) => match ident2.to_string().as_str() {
                             "|" => {
-                                out.0 .0.push(Token::Operator(Operator::Or));
+                                out.push(Token::Operator(Operator::Or));
                                 i += 2
                             }
                             _ => return Err("|* is not a valid operator".to_string()),
@@ -55,13 +77,13 @@ impl TryInto<PropStream> for TokenStream {
                         _ => return Err("Invalid operator".to_string()),
                     },
                     "!" => {
-                        out.0 .0.push(Token::Operator(Operator::Not));
+                        out.push(Token::Operator(Operator::Not));
                         i += 1
                     }
                     _ => return Err("Invalid punctuation".to_string()),
                 },
                 TokenTree::Ident(ident) => {
-                    out.0 .0.push(Token::Predicate(ident.to_string()));
+                    out.push(Token::Predicate(ident.to_string()));
                     i += 1;
                 }
                 TokenTree::Group(inner_tok) => {
@@ -69,9 +91,9 @@ impl TryInto<PropStream> for TokenStream {
                         Ok(inner_out) => inner_out,
                         Err(err) => return Err(err),
                     };
-                    out.0 .0.push(Token::Bracket(Bracket::Open));
-                    out.0 .0.append(&mut inner_out.0 .0);
-                    out.0 .0.push(Token::Bracket(Bracket::Close));
+                    out.push(Token::Bracket(Bracket::Open));
+                    out.append(inner_out.as_mut());
+                    out.push(Token::Bracket(Bracket::Close));
                     i += 1;
                 }
 

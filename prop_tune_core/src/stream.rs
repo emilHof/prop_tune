@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TokenStream(pub Vec<Token>);
 
@@ -5,11 +7,41 @@ impl TokenStream {
     pub fn new(tokens: impl Into<Vec<Token>>) -> Self {
         TokenStream(tokens.into())
     }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn push(&mut self, t: impl Into<Token>) {
+        self.0.push(t.into())
+    }
+
+    pub fn pop(&mut self) -> Option<Token> {
+        self.0.pop()
+    }
+
+    pub fn append<'a>(&'a mut self, e: impl Into<&'a mut Vec<Token>>) {
+        self.0.append(e.into())
+    }
+}
+
+impl AsMut<Vec<Token>> for TokenStream {
+    fn as_mut(&mut self) -> &mut Vec<Token> {
+        &mut self.0
+    }
 }
 
 impl Into<Vec<Token>> for TokenStream {
     fn into(self) -> Vec<Token> {
         self.0
+    }
+}
+
+impl Index<usize> for TokenStream {
+    type Output = Token;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.0[index]
     }
 }
 
