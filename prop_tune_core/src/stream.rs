@@ -1,15 +1,26 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TokenStream(pub Vec<Token>);
 
-#[derive(Debug, PartialEq, Eq
-    )]
+impl TokenStream {
+    pub fn new(tokens: impl Into<Vec<Token>>) -> Self {
+        TokenStream(tokens.into())
+    }
+}
+
+impl Into<Vec<Token>> for TokenStream {
+    fn into(self) -> Vec<Token> {
+        self.0
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Token {
     Bracket(Bracket),
     Operator(Operator),
     Predicate(String),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Operator {
     And,
     Or,
@@ -17,7 +28,7 @@ pub enum Operator {
     Implies,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Bracket {
     Open,
     Close,
@@ -60,7 +71,7 @@ impl TryInto<TokenStream> for String {
 
         match_buf(&mut buf, &mut res);
 
-        Ok(TokenStream(res))
+        Ok(TokenStream::new(res))
     }
 }
 
@@ -72,7 +83,7 @@ mod test {
     fn test_stream_from() {
         let input = "(A \\land B)".to_string();
 
-        let sut: TokenStream = input.try_into().ok().unwrap(); 
+        let sut: TokenStream = input.try_into().ok().unwrap();
 
         println!("{:?}", sut);
     }
@@ -81,7 +92,7 @@ mod test {
     fn test_stream_from_complex() {
         let input = "A \\lor ((B \\land C) \\lor (D \\land \\not A))".to_string();
 
-        let sut: TokenStream = input.try_into().ok().unwrap(); 
+        let sut: TokenStream = input.try_into().ok().unwrap();
 
         println!("{:?}", sut);
     }
