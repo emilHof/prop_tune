@@ -3,17 +3,14 @@ pub use prop_tune_macro::simplify;
 
 #[allow(dead_code)]
 fn test_belt() {
-let cases = vec![true, false];
+    let cases = vec![true, false];
     for &a in cases.iter() {
         for &b in cases.iter() {
             for &c in cases.iter() {
                 for &d in cases.iter() {
                     for &e in cases.iter() {
                         // case 1
-                        assert_eq!(
-                            a && (b || !c),
-                            simplify!(a && (b || !c))
-                        );
+                        assert_eq!(a && (b || !c), simplify!(a && (b || !c)));
 
                         // case 2
                         assert_eq!(
@@ -22,14 +19,16 @@ let cases = vec![true, false];
                                 (e && !(c && a)) && ((a && (b || !c)) && !((d || !b) && !(a && c)))
                             )
                         );
-                        
+
                         // case 3
                         assert_eq!(
-                            (((a || (!(b && !a) && (c || !d))) && (!(((c && ((a && !b) || (d && e))))))) 
-                                 && ((c && (!(d || !e) || (a && !d))))),
-                             simplify!(
-                                 (((a || (!(b && !a) && (c || !d))) && (!(((c && ((a && !b) || (d && e))))))) 
-                                     && ((c && (!(d || !e) || (a && !d)))))
+                            (((a || (!(b && !a) && (c || !d)))
+                                && (!(c && ((a && !b) || (d && e)))))
+                                && (c && (!(d || !e) || (a && !d)))),
+                            simplify!(
+                                (((a || (!(b && !a) && (c || !d)))
+                                    && (!(c && ((a && !b) || (d && e)))))
+                                    && (c && (!(d || !e) || (a && !d))))
                             )
                         );
                     }
@@ -81,7 +80,7 @@ mod test_lib {
     use super::*;
 
     fn eval(a: bool, b: bool, c: bool, d: bool) -> bool {
-        if simplify!{c && !(a && (!c && d)) && b} {
+        if simplify! {c && !(a && (!c && d)) && b} {
             true
         } else {
             false
@@ -150,7 +149,7 @@ mod test_lib {
     #[test]
     fn test_t2() {
         use std::time::Instant;
-        
+
         let now = Instant::now();
 
         (0..100_000).for_each(|_| {
