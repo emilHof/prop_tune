@@ -112,12 +112,12 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
 }
 
 fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
-    let mut first = *i;
-    match &stream[first] {
+    let mut index = *i;
+    match &stream[index] {
         stream::Token::Predicate(pred) => {
             *i += 1;
-            if first + 1 < stream.0.len() {
-                match &stream[first + 1] {
+            if index + 1 < stream.0.len() {
+                match &stream[index + 1] {
                     stream::Token::Bracket(stream::Bracket::Close) => {
                         *i += 1;
                         return Ok(Proposition::Predicate(pred.clone()));
@@ -135,9 +135,9 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
         stream::Token::Bracket(stream::Bracket::Open) => {
             *i += 1;
             let prop = parse_prop(i, stream)?;
-            first = *i;
+            index = *i;
 
-            if first + 1 < stream.len() {
+            if index + 1 < stream.len() {
                 match_op_prop(*i, i, stream, prop)
             } else {
                 return Ok(prop);
@@ -152,9 +152,9 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
 }
 
 pub fn handle_not(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
-    let mut first = *i;
-    if first < stream.len() {
-        let prop = match &stream[first] {
+    let mut index = *i;
+    if index < stream.len() {
+        let prop = match &stream[index] {
             stream::Token::Predicate(pred) => {
                 *i += 1;
                 Ok(Proposition::Composition(Box::new(Operator::Not(
@@ -169,9 +169,9 @@ pub fn handle_not(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposi
             }
             _ => Err(ParseError),
         }?;
-        first = *i;
+        index = *i;
 
-        if first + 1 < stream.len() {
+        if index + 1 < stream.len() {
             match_op_prop(*i, i, stream, prop)
         } else {
             return Ok(prop);
@@ -182,12 +182,12 @@ pub fn handle_not(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposi
 }
 
 pub fn match_op_prop(
-    first: usize,
+    index: usize,
     i: &mut usize,
     stream: &stream::TokenStream,
     prop: Proposition,
 ) -> Result<Proposition, ParseError> {
-    match &stream.0[first] {
+    match &stream.0[index] {
         stream::Token::Bracket(stream::Bracket::Close) => {
             *i += 1;
             return Ok(prop);
