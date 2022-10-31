@@ -17,7 +17,7 @@ impl AsMut<Vec<Token>> for PropStream {
     fn as_mut(&mut self) -> &mut Vec<Token> {
         self.0.as_mut()
     }
-}asiimov car wrap
+}
 
 impl Deref for PropStream {
     type Target = stream::TokenStream;
