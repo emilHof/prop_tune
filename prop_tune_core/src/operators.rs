@@ -113,6 +113,8 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
 }
 
 fn flip_prop(stream: &mut stream::TokenStream) {
+    // TODO: Deal with flipping the nots properly
+    // Right now the cases of nots in from of parens is not handled correctly
     println! {"initial: {:?}", stream};
     stream.0 = stream.0.clone().into_iter().rev().collect();
     println! {"post reverse: {:?}", stream};
