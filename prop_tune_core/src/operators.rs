@@ -100,7 +100,8 @@ impl Eq for Condition {}
 impl TryInto<Proposition> for crate::stream::TokenStream {
     type Error = ParseError;
 
-    fn try_into(self) -> Result<Proposition, Self::Error> {
+    fn try_into(mut self) -> Result<Proposition, Self::Error> {
+        flip_prop(&mut self);
         if self.len() < 1 {
             return Err(ParseError);
         }
@@ -111,50 +112,113 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
     }
 }
 
-fn parse_prop_stack(stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
-    let mut stack: Vec<stream::Token> = vec![];
-    /*
-    let mut prop = None;
-    for i in 0..stream.0.len() {
+fn flip_prop(stream: &mut stream::TokenStream) {
+    println! {"initial: {:?}", stream};
+    stream.0 = stream.0.clone().into_iter().rev().collect();
+    println! {"post reverse: {:?}", stream};
+
+    for i in 0..stream.len() {
         match &stream[i] {
-            stream::Token::Predicate(pred) => match stack.last() {
-                None => stack.push(stream::Token::Predicate(pred.clone())),
-                Some(x) => match x {
-                    stream::Token::Operator(op) => match op {
-                        stream::Operator::Not => stack.push(stream::Token::Predicate(pred.clone())),
-                        _ => {
-                            if stack.len() > 3 {
-                                panic!("too many items on the stack")
-                            }
-                            let mut temp = Proposition::new_pred(pred);
-
-                            match stack.len() {
-                                1  => {
-                                    match stack.last().unwrap() {
-                                        stream::Token::Operator(stream::Operator::)
-                                    }
-                                },
-                                2 => {
-                                    let (a, op) = (stack[0], stack[1]);
-                                    if a !=
-                                }
-                            }
-
-
-                        }
-                    }
-                }
-            },
             stream::Token::Operator(stream::Operator::Not) => {
-                None => stack.push(stream::Token::Operator(stream::Operator::Not)),
-                Some(_) => panic!("stack should be empty"),
+                let stream = stream as *mut stream::TokenStream;
+                unsafe { std::mem::swap(&mut (*stream)[i], &mut (*stream)[i - 1]) }
             }
-
+            stream::Token::Bracket(br) => {
+                stream[i] = stream::Token::Bracket(match br {
+                    stream::Bracket::Open => stream::Bracket::Close,
+                    stream::Bracket::Close => stream::Bracket::Open,
+                })
+            }
+            _ => (),
         }
     }
-    */
+    println! {"post swap: {:?}", stream};
+}
 
-    todo!()
+fn parse_prop_rev(
+    index: &mut usize,
+    stream: &stream::TokenStream,
+) -> Result<Proposition, ParseError> {
+    let mut i = *index;
+
+    // A land B land neg C
+    //                   i
+    // TODO: make sure that overflow is handled properly.
+
+    match &stream[i] {
+        stream::Token::Predicate(pred) => {
+            if i > 0 {
+                *index = index.wrapping_sub(1);
+                i = i.wrapping_sub(1);
+                match &stream[i] {
+                    stream::Token::Bracket(stream::Bracket::Open) => {
+                        *index = index.wrapping_sub(1);
+                        return Ok(Proposition::Predicate(pred.clone()));
+                    }
+                    stream::Token::Operator(stream::Operator::Not) => {
+                        *index = index.wrapping_sub(1);
+                        if i > 0 {
+                            i = i.wrapping_sub(1);
+                            match &stream[i] {
+                                stream::Token::Bracket(stream::Bracket::Open) => {
+                                    *index = index.wrapping_sub(1);
+                                    return Ok(Proposition::new_not(pred.clone()));
+                                }
+                                stream::Token::Operator(op) => {
+                                    *index = index.wrapping_sub(1);
+                                    match op {
+                                        stream::Operator::And => Ok(Proposition::new_and(
+                                            parse_prop_rev(index, stream)?,
+                                            pred.clone(),
+                                        )),
+                                        stream::Operator::Or => Ok(Proposition::new_or(
+                                            parse_prop_rev(index, stream)?,
+                                            pred.clone(),
+                                        )),
+                                        stream::Operator::Implies => Ok(Proposition::new_and(
+                                            parse_prop_rev(index, stream)?,
+                                            pred.clone(),
+                                        )),
+                                        _ => panic!("should not have a not in this place"),
+                                    }
+                                }
+                                _ => panic!(),
+                            }
+                        } else {
+                            return Ok(Proposition::new_not(pred.clone()));
+                        }
+                    }
+                    stream::Token::Operator(op) => {
+                        *index = index.wrapping_sub(1);
+                        match op {
+                            stream::Operator::And => Ok(Proposition::new_and(
+                                parse_prop_rev(index, stream)?,
+                                pred.clone(),
+                            )),
+                            stream::Operator::Or => Ok(Proposition::new_or(
+                                parse_prop_rev(index, stream)?,
+                                pred.clone(),
+                            )),
+                            stream::Operator::Implies => Ok(Proposition::new_and(
+                                parse_prop_rev(index, stream)?,
+                                pred.clone(),
+                            )),
+                            _ => panic!("should not have a not in this place"),
+                        }
+                    }
+                    _ => Err(ParseError),
+                }
+            } else {
+                Ok(Proposition::new_pred(pred))
+            }
+        }
+        stream::Token::Bracket(stream::Bracket::Close) => {
+            // TODO Properly handle the bracket case
+            *index += 1;
+            parse_prop(index, stream)
+        }
+        _ => Err(ParseError),
+    }
 }
 
 fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
@@ -170,7 +234,13 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
                     }
                     stream::Token::Operator(op) => {
                         *i += 1;
-                        return match_op(op, i, stream, Proposition::Predicate(pred.clone()));
+                        return match_op(
+                            op,
+                            i,
+                            stream,
+                            Proposition::Predicate(pred.clone()),
+                            parse_prop,
+                        );
                     }
                     _ => Err(ParseError),
                 }
@@ -233,14 +303,14 @@ pub fn match_op_prop(
     stream: &stream::TokenStream,
     prop: Proposition,
 ) -> Result<Proposition, ParseError> {
-    match &stream.0[index] {
+    match &stream[index] {
         stream::Token::Bracket(stream::Bracket::Close) => {
             *i += 1;
             return Ok(prop);
         }
         stream::Token::Operator(op) => {
             *i += 1;
-            match_op(op, i, stream, prop)
+            match_op(op, i, stream, prop, parse_prop)
         }
         _ => Err(ParseError),
     }
@@ -251,19 +321,20 @@ pub fn match_op(
     i: &mut usize,
     stream: &stream::TokenStream,
     prop: Proposition,
+    parser: impl Fn(&mut usize, &stream::TokenStream) -> Result<Proposition, ParseError>,
 ) -> Result<Proposition, ParseError> {
     match op {
         stream::Operator::And => Ok(Proposition::Composition(Box::new(Operator::And(
             prop,
-            parse_prop(i, stream)?,
+            parser(i, stream)?,
         )))),
         stream::Operator::Or => Ok(Proposition::Composition(Box::new(Operator::Or(
             prop,
-            parse_prop(i, stream)?,
+            parser(i, stream)?,
         )))),
         stream::Operator::Implies => Ok(Proposition::Composition(Box::new(Operator::Implies(
             prop,
-            parse_prop(i, stream)?,
+            parser(i, stream)?,
         )))),
         stream::Operator::Not => Err(ParseError),
     }
@@ -357,18 +428,49 @@ mod test_operators {
     }
 
     #[test]
-    fn test_parse_stack() {
-        let cases = vec![(
-            stream::TokenStream(vec![
-                stream::Token::Predicate("A".to_string()),
-                stream::Token::Operator(stream::Operator::And),
-                stream::Token::Predicate("B".to_string()),
-            ]),
-            Proposition::new_or(Proposition::new_and("B", "C"), "A"),
-        )];
+    fn test_parse_flipped() {
+        let cases = vec![
+            (
+                stream::TokenStream(vec![
+                    stream::Token::Predicate("A".to_string()),
+                    stream::Token::Operator(stream::Operator::Or),
+                    stream::Token::Predicate("B".to_string()),
+                ]),
+                Proposition::new_or("A", "B"),
+            ),
+            (
+                stream::TokenStream(vec![
+                    stream::Token::Bracket(stream::Bracket::Open),
+                    stream::Token::Predicate("A".to_string()),
+                    stream::Token::Operator(stream::Operator::Or),
+                    stream::Token::Predicate("B".to_string()),
+                    stream::Token::Bracket(stream::Bracket::Close),
+                    stream::Token::Operator(stream::Operator::And),
+                    stream::Token::Predicate("C".to_string()),
+                ]),
+                Proposition::new_and(Proposition::new_or("A", "B"), "C"),
+            ),
+        ];
 
-        cases
-            .into_iter()
-            .for_each(|(input, expect)| assert_eq!(expect, parse_prop_stack(&input).unwrap()));
+        cases.into_iter().for_each(|(mut input, expect)| {
+            flip_prop(&mut input);
+            assert_eq!(expect, TryInto::<Proposition>::try_into(input).unwrap())
+        });
+    }
+
+    #[test]
+    fn flip_stream() {
+        let mut input = stream::TokenStream(vec![
+            stream::Token::Bracket(stream::Bracket::Open),
+            stream::Token::Predicate("A".to_string()),
+            stream::Token::Operator(stream::Operator::Or),
+            stream::Token::Predicate("B".to_string()),
+            stream::Token::Bracket(stream::Bracket::Close),
+            stream::Token::Operator(stream::Operator::And),
+            stream::Token::Operator(stream::Operator::Not),
+            stream::Token::Predicate("C".to_string()),
+        ]);
+
+        flip_prop(&mut input)
     }
 }

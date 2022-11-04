@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct TokenStream(pub Vec<Token>);
@@ -42,6 +42,12 @@ impl Index<usize> for TokenStream {
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.0[index]
+    }
+}
+
+impl IndexMut<usize> for TokenStream {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.0[index]
     }
 }
 
