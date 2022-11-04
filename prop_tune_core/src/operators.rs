@@ -115,16 +115,9 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
 fn flip_prop(stream: &mut stream::TokenStream) {
     // TODO: Deal with flipping the nots properly
     // Right now the cases of nots in from of parens is not handled correctly
-    println! {"initial: {:?}", stream};
     stream.0 = stream.0.clone().into_iter().rev().collect();
-    println! {"post reverse: {:?}", stream};
-
     for i in 0..stream.len() {
         match &stream[i] {
-            stream::Token::Operator(stream::Operator::Not) => {
-                let stream = stream as *mut stream::TokenStream;
-                unsafe { std::mem::swap(&mut (*stream)[i], &mut (*stream)[i - 1]) }
-            }
             stream::Token::Bracket(br) => {
                 stream[i] = stream::Token::Bracket(match br {
                     stream::Bracket::Open => stream::Bracket::Close,
@@ -134,7 +127,38 @@ fn flip_prop(stream: &mut stream::TokenStream) {
             _ => (),
         }
     }
-    println! {"post swap: {:?}", stream};
+
+    for i in 0..stream.len() {
+        match &stream[i] {
+            stream::Token::Operator(stream::Operator::Not) => {
+                let mut i = i;
+                // count the parentheses to make sure the negation is placed in the right place
+                let mut parens = 0;
+                while let Some(j) = i.checked_sub(1) {
+                    parens += if stream[j] == stream::Token::Bracket(stream::Bracket::Close) {
+                        1
+                    } else if stream[j] == stream::Token::Bracket(stream::Bracket::Open) {
+                        -1
+                    } else {
+                        0
+                    };
+
+                    unsafe {
+                        let stream = stream as *mut stream::TokenStream;
+                        std::mem::swap(&mut (*stream)[i], &mut (*stream)[j])
+                    }
+
+                    i = j;
+
+                    // break if the end of the parentheses block is reached
+                    if parens == 0 {
+                        break;
+                    }
+                }
+            }
+            _ => (),
+        }
+    }
 }
 
 fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
