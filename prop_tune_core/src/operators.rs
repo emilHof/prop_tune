@@ -322,40 +322,6 @@ mod test_operators {
     use stream;
 
     #[test]
-    fn test_composition() {
-        let comp = Proposition::Composition(Box::new(Operator::And(
-            Proposition::Predicate("A".to_string()),
-            Proposition::Predicate("B".to_string()),
-        )));
-        println!("{:?}", comp);
-    }
-
-    #[test]
-    fn test_complex_compostion() {
-        let comp = Proposition::Composition(Box::new(Operator::And(
-            Proposition::Predicate("C".to_string()),
-            Proposition::Composition(Box::new(Operator::Or(
-                Proposition::Predicate("A".to_string()),
-                Proposition::Predicate("B".to_string()),
-            ))),
-        )));
-        println!("{:?}", comp);
-        println!("{}", comp);
-    }
-
-    #[test]
-    fn test_parsing() {
-        use stream::Token;
-        let stream = stream::TokenStream(vec![
-            Token::Predicate("A".to_string()),
-            Token::Operator(stream::Operator::And),
-            Token::Predicate("B".to_string()),
-        ]);
-        let comp: Proposition = stream.try_into().ok().unwrap();
-        println!("{:?}", comp)
-    }
-
-    #[test]
     fn test_partial_eq() {
         let cases = vec![(
             Proposition::new_or("A", Proposition::new_and("C", "B")),
@@ -368,7 +334,7 @@ mod test_operators {
     }
 
     #[test]
-    fn test_parse_flipped() {
+    fn test_parse() {
         let cases = vec![
             (
                 stream::TokenStream(vec![
@@ -380,6 +346,7 @@ mod test_operators {
             ),
             (
                 stream::TokenStream(vec![
+                    stream::Token::Operator(stream::Operator::Not),
                     stream::Token::Bracket(stream::Bracket::Open),
                     stream::Token::Predicate("A".to_string()),
                     stream::Token::Operator(stream::Operator::Or),
@@ -388,29 +355,14 @@ mod test_operators {
                     stream::Token::Operator(stream::Operator::And),
                     stream::Token::Predicate("C".to_string()),
                 ]),
-                Proposition::new_and(Proposition::new_or("A", "B"), "C"),
+                Proposition::new_and(Proposition::new_not(Proposition::new_or("A", "B")), "C"),
             ),
         ];
 
-        cases.into_iter().for_each(|(mut input, expect)| {
-            flip_prop(&mut input);
-            assert_eq!(expect, TryInto::<Proposition>::try_into(input).unwrap())
+        cases.into_iter().for_each(|(input, expect)| {
+            let parsed = TryInto::<Proposition>::try_into(input).unwrap();
+            println!("{:?}", parsed);
+            assert_eq!(expect, parsed);
         });
-    }
-
-    #[test]
-    fn flip_stream() {
-        let mut input = stream::TokenStream(vec![
-            stream::Token::Bracket(stream::Bracket::Open),
-            stream::Token::Predicate("A".to_string()),
-            stream::Token::Operator(stream::Operator::Or),
-            stream::Token::Predicate("B".to_string()),
-            stream::Token::Bracket(stream::Bracket::Close),
-            stream::Token::Operator(stream::Operator::And),
-            stream::Token::Operator(stream::Operator::Not),
-            stream::Token::Predicate("C".to_string()),
-        ]);
-
-        flip_prop(&mut input)
     }
 }
