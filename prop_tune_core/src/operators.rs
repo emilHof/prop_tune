@@ -111,6 +111,52 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
     }
 }
 
+fn parse_prop_stack(stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
+    let mut stack: Vec<stream::Token> = vec![];
+    /*
+    let mut prop = None;
+    for i in 0..stream.0.len() {
+        match &stream[i] {
+            stream::Token::Predicate(pred) => match stack.last() {
+                None => stack.push(stream::Token::Predicate(pred.clone())),
+                Some(x) => match x {
+                    stream::Token::Operator(op) => match op {
+                        stream::Operator::Not => stack.push(stream::Token::Predicate(pred.clone())),
+                        _ => {
+                            if stack.len() > 3 {
+                                panic!("too many items on the stack")
+                            }
+                            let mut temp = Proposition::new_pred(pred);
+
+                            match stack.len() {
+                                1  => {
+                                    match stack.last().unwrap() {
+                                        stream::Token::Operator(stream::Operator::)
+                                    }
+                                },
+                                2 => {
+                                    let (a, op) = (stack[0], stack[1]);
+                                    if a !=
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            },
+            stream::Token::Operator(stream::Operator::Not) => {
+                None => stack.push(stream::Token::Operator(stream::Operator::Not)),
+                Some(_) => panic!("stack should be empty"),
+            }
+
+        }
+    }
+    */
+
+    todo!()
+}
+
 fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
     let mut index = *i;
     match &stream[index] {
@@ -262,6 +308,7 @@ impl Into<String> for Proposition {
 #[cfg(test)]
 mod test_operators {
     use super::*;
+    use stream;
 
     #[test]
     fn test_composition() {
@@ -307,5 +354,21 @@ mod test_operators {
         cases
             .into_iter()
             .for_each(|(input, expect)| assert_eq!(expect, input));
+    }
+
+    #[test]
+    fn test_parse_stack() {
+        let cases = vec![(
+            stream::TokenStream(vec![
+                stream::Token::Predicate("A".to_string()),
+                stream::Token::Operator(stream::Operator::And),
+                stream::Token::Predicate("B".to_string()),
+            ]),
+            Proposition::new_or(Proposition::new_and("B", "C"), "A"),
+        )];
+
+        cases
+            .into_iter()
+            .for_each(|(input, expect)| assert_eq!(expect, parse_prop_stack(&input).unwrap()));
     }
 }
