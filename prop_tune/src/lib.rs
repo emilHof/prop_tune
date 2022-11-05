@@ -78,13 +78,13 @@ fn ft3s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
 }
 
 #[allow(dead_code)]
-fn ft4p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
-    a && (!c || !(a || (b && e)) && (!d || (b && c))) || !_f
+fn ft4p(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
+    a && (!c || !(a || (b && e)) && (!d || (b && c))) || !f
 }
 
 #[allow(dead_code)]
-fn ft4s(a: bool, _b: bool, c: bool, d: bool, _e: bool, _f: bool) -> bool {
-    simplify!(a && (!c || !(a || (b && e)) && (!d || (b && c))) || !_f)
+fn ft4s(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
+    simplify!(a && (!c || !(a || (b && e)) && (!d || (b && c))) || !f)
 }
 
 #[allow(dead_code)]
