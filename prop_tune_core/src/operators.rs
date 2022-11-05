@@ -357,11 +357,58 @@ mod test_operators {
                 ]),
                 Proposition::new_and(Proposition::new_not(Proposition::new_or("A", "B")), "C"),
             ),
+            (
+                stream::TokenStream(vec![
+                    stream::Token::Predicate("a".to_string()),
+                    stream::Token::Operator(stream::Operator::And),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Open),
+                    stream::Token::Operator(stream::Operator::Not),
+                    stream::Token::Predicate("c".to_string()),
+                    stream::Token::Operator(stream::Operator::Or),
+                    stream::Token::Operator(stream::Operator::Not),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Open),
+                    stream::Token::Predicate("a".to_string()),
+                    stream::Token::Operator(stream::Operator::Or),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Open),
+                    stream::Token::Predicate("b".to_string()),
+                    stream::Token::Operator(stream::Operator::And),
+                    stream::Token::Predicate("e".to_string()),
+                    stream::Token::Bracket(stream::Bracket::Close),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Close),
+                    //
+                    stream::Token::Operator(stream::Operator::And),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Open),
+                    stream::Token::Operator(stream::Operator::Not),
+                    stream::Token::Predicate("d".to_string()),
+                    stream::Token::Operator(stream::Operator::Or),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Open),
+                    stream::Token::Predicate("b".to_string()),
+                    stream::Token::Operator(stream::Operator::And),
+                    stream::Token::Predicate("c".to_string()),
+                    stream::Token::Bracket(stream::Bracket::Close),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Close),
+                    //
+                    stream::Token::Bracket(stream::Bracket::Close),
+                    //
+                    stream::Token::Operator(stream::Operator::Or),
+                    stream::Token::Operator(stream::Operator::Not),
+                    stream::Token::Predicate("_f".to_string()),
+                ]),
+                Proposition::new_and(Proposition::new_not(Proposition::new_or("A", "B")), "C"),
+            ),
         ];
 
         cases.into_iter().for_each(|(input, expect)| {
             let parsed = TryInto::<Proposition>::try_into(input).unwrap();
-            println!("{:?}", parsed);
+            // println!("{:?}", parsed);
+            println!("{}", parsed);
             assert_eq!(expect, parsed);
         });
     }

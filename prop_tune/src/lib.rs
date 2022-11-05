@@ -88,6 +88,11 @@ fn ft4s(a: bool, _b: bool, c: bool, d: bool, _e: bool, _f: bool) -> bool {
 }
 
 #[allow(dead_code)]
+fn ft4n(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
+    rewrite!(a && (!c || !(a || (b && e)) && (!d || (b && c))) || !f)
+}
+
+#[allow(dead_code)]
 fn ft5p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
     !(a && (b && c))
 }
@@ -104,6 +109,16 @@ fn ft6p(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
 
 #[allow(dead_code)]
 fn ft6s(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
+    simplify!(a && !(c || b) || !(a && f))
+}
+
+#[allow(dead_code)]
+fn ft7p(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
+    a && !(c || b) || !(a && f)
+}
+
+#[allow(dead_code)]
+fn ft7s(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     simplify!(a && !(c || b) || !(a && f))
 }
 
@@ -142,16 +157,16 @@ mod test_lib {
                         TF.iter().for_each(|&d| {
                             TF.iter().for_each(|&e| {
                                 TF.iter().for_each(|&f| {
-                                    println!("1");
                                     assert_eq!(ft1s(a, b, c, d, e, f), ft1p(a, b, c, d, e, f));
-                                    println!("2");
                                     assert_eq!(ft2s(a, b, c, d, e, f), ft2p(a, b, c, d, e, f));
-                                    println!("3");
                                     assert_eq!(ft3s(a, b, c, d, e, f), ft3p(a, b, c, d, e, f));
-                                    println!("4");
-                                    assert_eq!(ft4s(a, b, c, d, e, f), ft4p(a, b, c, d, e, f));
-                                    println!("5");
+                                    // a && (!c || !(a || (b && e)) && (!d || (b && c))) || !f
+                                    println!("4, a:{}, b:{}, c:{}, d:{}, e:{}, f:{}", a, b, c, d, e, f);
+                                    assert_eq!(ft4p(a, b, c, d, e, f), ft4n(a, b, c, d, e, f));
+                                    println!("4 end");
+                                    // assert_eq!(ft4s(a, b, c, d, e, f), ft4p(a, b, c, d, e, f));
                                     assert_eq!(ft5s(a, b, c, d, e, f), ft5p(a, b, c, d, e, f));
+                                    assert_eq!(ft7s(a, b, c, d, e, f), ft7p(a, b, c, d, e, f));
                                 })
                             })
                         })
