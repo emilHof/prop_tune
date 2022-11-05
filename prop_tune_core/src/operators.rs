@@ -190,14 +190,14 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
         }
         stream::Token::Bracket(stream::Bracket::Open) => {
             *i += 1;
-            let prop = parse_prop(i, stream)?;
+            let mut prop = parse_prop(i, stream)?;
             index = *i;
 
             if index + 1 < stream.len() {
-                match_op_prop(*i, i, stream, prop)
-            } else {
-                return Ok(prop);
+                prop = match_op_prop(*i, i, stream, prop)?;
             }
+
+            Ok(prop)
         }
         stream::Token::Operator(stream::Operator::Not) => {
             *i += 1;
@@ -246,12 +246,8 @@ pub fn match_op_prop(
     match &stream[index] {
         stream::Token::Bracket(stream::Bracket::Close) => {
             *i += 1;
-            println!("reached the bracket: {}", prop);
-            if index + 1 < stream.len() {
-                match_op_prop(*i, i, stream, prop)
-            } else {
-                return Ok(prop);
-            }
+
+            return Ok(prop);
         }
         stream::Token::Operator(op) => {
             *i += 1;
