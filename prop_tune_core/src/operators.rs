@@ -251,7 +251,6 @@ pub fn match_op_prop(
         }
         stream::Token::Operator(op) => {
             *i += 1;
-            println!("reached this with: {}", prop);
             match_op(op, i, stream, prop, parse_prop)
         }
         _ => Err(ParseError),
@@ -284,6 +283,7 @@ pub fn match_op(
 
 impl std::fmt::Display for Proposition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let color = 90 + (rand::random::<u32>() % 7);
         match self {
             Proposition::Predicate(pred) => write!(f, "{}", pred),
             Proposition::Condition(cond) => match cond {
@@ -291,8 +291,18 @@ impl std::fmt::Display for Proposition {
                 Condition::False => write!(f, "F"),
             },
             Proposition::Composition(comp) => match comp.as_ref() {
-                Operator::And(a, b) => write!(f, "({} \\land {})", a, b),
-                Operator::Or(a, b) => write!(f, "{} \\lor {}", a, b),
+                Operator::And(a, b) => {
+                    write!(
+                        f,
+                        "\x1b[{}m(\x1b[0m{} \x1b[{}m\\land\x1b[0m {}\x1b[{}m)\x1b[0m",
+                        color, a, color, b, color
+                    )
+                }
+                Operator::Or(a, b) => write!(
+                    f,
+                    "\x1b[{}m(\x1b[0m{} \x1b[{}m\\lor\x1b[0m {}\x1b[{}m)\x1b[0m",
+                    color, a, color, b, color
+                ),
                 Operator::Implies(a, b) => write!(f, "({} \\implies {})", a, b),
                 Operator::Not(a) => write!(f, "\\neg {}", a),
             },
