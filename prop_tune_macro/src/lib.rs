@@ -26,3 +26,21 @@ pub fn simplify(tok: TokenStream) -> TokenStream {
     let stream = TokenStream::from(Into::<TokenTree>::into(MacroProp::new(out)));
     stream
 }
+
+#[proc_macro]
+pub fn rewrite(tok: TokenStream) -> TokenStream {
+    let out: PropStream = match tok.try_into() {
+        Ok(out) => out,
+        Err(err) => {
+            panic!("{:?}", err)
+        }
+    };
+
+    let out: Proposition = match out.try_into() {
+        Ok(out) => out,
+        Err(err) => panic!("{:?}", err),
+    };
+
+    let stream = TokenStream::from(Into::<TokenTree>::into(MacroProp::new(out)));
+    stream
+}

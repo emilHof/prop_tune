@@ -10,3 +10,4 @@ documentation = "https://github.com/emilHof/prop_tune"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+rand = "0.8.5"

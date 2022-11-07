@@ -12,4 +12,4 @@ documentation = "https://github.com/emilHof/prop_tune"
 proc-macro = true
 
 [dependencies]
-prop_tune_core = { version = "0.1.0", path = "../prop_tune_core" }
+prop_tune_core = { version = "0.1", path = "../prop_tune_core" }
