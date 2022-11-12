@@ -100,8 +100,7 @@ impl Eq for Condition {}
 impl TryInto<Proposition> for crate::stream::TokenStream {
     type Error = ParseError;
 
-    fn try_into(mut self) -> Result<Proposition, Self::Error> {
-        flip_prop(&mut self);
+    fn try_into(self) -> Result<Proposition, Self::Error> {
         if self.len() < 1 {
             return Err(ParseError);
         }
