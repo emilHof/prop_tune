@@ -1,0 +1,51 @@
+name: Crates
+
+on:
+  push:
+    branches: [ "release" ]
+
+
+jobs:
+  publish_core:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+        - uses: actions/checkout@v2
+        - uses: actions-rs/toolchain@v1
+          with:
+              toolchain: stable
+              override: true
+        - uses: katyo/publish-crates@v1
+          with:
+              path: './prop_tune_core'
+              registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+              ignore-unpublished-changes: true
+    
+  publish_macro:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+        - uses: actions-rs/toolchain@v1
+          with:
+              toolchain: stable
+              override: true
+        - uses: katyo/publish-crates@v1
+          with:
+              path: './prop_tune_macro'
+              registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+              ignore-unpublished-changes: true
+      
+    publish_prop_tune:
+      runs-on: ubuntu-latest
+      steps:
+          - uses: actions/checkout@v2
+          - uses: actions-rs/toolchain@v1
+            with:
+                toolchain: stable
+                override: true
+          - uses: katyo/publish-crates@v1
+            with:
+                path: './prop_tune'
+                registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+                ignore-unpublished-changes: true
