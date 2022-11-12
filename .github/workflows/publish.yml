@@ -19,7 +19,7 @@ jobs:
         - uses: katyo/publish-crates@v1
           with:
               path: './prop_tune_core'
-              registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+              registry-token: ${{ secrets.CRATES_TOKEN }}
               ignore-unpublished-changes: true
     
   publish_macro:
@@ -33,7 +33,7 @@ jobs:
         - uses: katyo/publish-crates@v1
           with:
               path: './prop_tune_macro'
-              registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+              registry-token: ${{ secrets.CRATES_TOKEN }}
               ignore-unpublished-changes: true
       
   publish_prop_tune:
@@ -47,5 +47,5 @@ jobs:
           - uses: katyo/publish-crates@v1
             with:
                 path: './prop_tune'
-                registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+                registry-token: ${{ secrets.CRATES_TOKEN }}
                 ignore-unpublished-changes: true
