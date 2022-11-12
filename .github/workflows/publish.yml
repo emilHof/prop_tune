@@ -36,7 +36,7 @@ jobs:
               registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
               ignore-unpublished-changes: true
       
-    publish_prop_tune:
+  publish_prop_tune:
       runs-on: ubuntu-latest
       steps:
           - uses: actions/checkout@v2
