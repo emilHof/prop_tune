@@ -1,3 +1,4 @@
+pub use crate::operators::flip_stream;
 use std::ops::{Index, IndexMut};
 
 #[derive(Debug, PartialEq, Eq, Clone)]

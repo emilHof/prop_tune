@@ -100,8 +100,7 @@ impl Eq for Condition {}
 impl TryInto<Proposition> for crate::stream::TokenStream {
     type Error = ParseError;
 
-    fn try_into(mut self) -> Result<Proposition, Self::Error> {
-        flip_prop(&mut self);
+    fn try_into(self) -> Result<Proposition, Self::Error> {
         if self.len() < 1 {
             return Err(ParseError);
         }
@@ -112,7 +111,7 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
     }
 }
 
-fn flip_prop(stream: &mut stream::TokenStream) {
+pub fn flip_stream(stream: &mut stream::TokenStream) {
     // TODO: Deal with flipping the nots properly
     // Right now the cases of nots in from of parens is not handled correctly
     stream.0 = stream.0.clone().into_iter().rev().collect();
@@ -312,19 +311,7 @@ impl std::fmt::Display for Proposition {
 
 impl Into<String> for Proposition {
     fn into(self) -> String {
-        match self {
-            Proposition::Predicate(pred) => format!("{}", pred),
-            Proposition::Condition(cond) => match cond {
-                Condition::True => format!("T"),
-                Condition::False => format!("F"),
-            },
-            Proposition::Composition(comp) => match comp.as_ref() {
-                Operator::And(a, b) => format!("{} \\land {}", a, b),
-                Operator::Or(a, b) => format!("{} \\lor {}", a, b),
-                Operator::Implies(a, b) => format!("{} \\implies {}", a, b),
-                Operator::Not(a) => format!("\\neg {}", a),
-            },
-        }
+        format!("{}", self)
     }
 }
 
