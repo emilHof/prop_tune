@@ -61,14 +61,14 @@ fn ft2s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
     simplify!(((a && !(b && !(d || !c))) && ((!a || _f) && (c && !(b || d)))) && (a || !(e && !c)))
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft3p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
     ((b || !(a || b)) && (!c || (!(a || e) && (_f && !(e && d))))
         || ((c && !(d || !a)) && !(d || !e)))
         && ((!e && (d || b)) && (a || !_f))
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft3s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
     simplify!(
         ((b || !(a || b)) && (!c || (!(a || e) && (_f && !(e && d))))
@@ -77,52 +77,52 @@ fn ft3s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
     )
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft4p(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     a && (!c || !(a || (b && e)) && (!d || (b && c))) || !f
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft4s(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     simplify!(a && (!c || !(a || (b && e)) && (!d || (b && c))) || !f)
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft4n(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     rewrite!(a && (!c || !(a || (b && e)) && (!d || (b && c))) || !f)
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft5p(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
     !(a && (b && c))
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft5s(a: bool, b: bool, c: bool, d: bool, e: bool, _f: bool) -> bool {
     simplify!(!(a && (b && c)))
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft6p(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     a && !(c || b) || !(a && f)
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft6s(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     simplify!(a && !(c || b) || !(a && f))
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft7p(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     a && !(c || b) || !(a && f)
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn ft7s(a: bool, b: bool, c: bool, d: bool, e: bool, f: bool) -> bool {
     simplify!(a && !(c || b) || !(a && f))
 }
 
-#[allow(dead_code)]
+#[allow(dead_code, unused_variables)]
 fn r1(a: bool, b: bool, c: bool) -> bool {
     rewrite!(!(a && (b && c)))
 }
