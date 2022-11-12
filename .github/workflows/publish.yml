@@ -7,9 +7,7 @@ on:
 
 jobs:
   publish_core:
-
     runs-on: ubuntu-latest
-    
     steps:
         - uses: actions/checkout@v2
         - uses: actions-rs/toolchain@v1
@@ -23,6 +21,7 @@ jobs:
               ignore-unpublished-changes: true
     
   publish_macro:
+    needs: publish_core
     runs-on: ubuntu-latest
     steps:
         - uses: actions/checkout@v2
@@ -37,15 +36,16 @@ jobs:
               ignore-unpublished-changes: true
       
   publish_prop_tune:
-      runs-on: ubuntu-latest
-      steps:
-          - uses: actions/checkout@v2
-          - uses: actions-rs/toolchain@v1
-            with:
-                toolchain: stable
-                override: true
-          - uses: katyo/publish-crates@v1
-            with:
-                path: './prop_tune'
-                registry-token: ${{ secrets.CRATES_TOKEN }}
-                ignore-unpublished-changes: true
+    needs: publish_macro
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
+        - uses: actions-rs/toolchain@v1
+          with:
+              toolchain: stable
+              override: true
+        - uses: katyo/publish-crates@v1
+          with:
+              path: './prop_tune'
+              registry-token: ${{ secrets.CRATES_TOKEN }}
+              ignore-unpublished-changes: true
