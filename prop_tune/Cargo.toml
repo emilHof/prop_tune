@@ -10,5 +10,5 @@ documentation = "https://github.com/emilHof/prop_tune"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-prop_tune_core = { version="0.1" }
-prop_tune_macro = { version="0.1" }
+prop_tune_core = { version="0.2" }
+prop_tune_macro = { version="0.2" }
