@@ -1,6 +1,6 @@
 [package]
 name = "prop_tune_macro"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 description = "The procedural macro crate for proc_tune"
 license = "MIT"
@@ -12,4 +12,4 @@ documentation = "https://github.com/emilHof/prop_tune"
 proc-macro = true
 
 [dependencies]
-prop_tune_core = { version = "0.1" }
+prop_tune_core = { version = "0.2" }

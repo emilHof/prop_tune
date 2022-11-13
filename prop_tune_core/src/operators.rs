@@ -426,7 +426,7 @@ mod test_operators {
             ),
         ];
 
-        cases.into_iter().for_each(|(input, expect)| {
+        cases.into_iter().for_each(|(input, _expect)| {
             let parsed = TryInto::<Proposition>::try_into(input).unwrap();
             // println!("{:?}", parsed);
             println!("{}", parsed);
